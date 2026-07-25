@@ -12,14 +12,21 @@ dotenv.config()
 
 const app = express()
 
+// CORS — frontend URL allow karein
 app.use(cors({
-  origin: '*',
+  origin: [
+    'http://localhost:5173',
+    'https://nextstore-frontend-pearl.vercel.app',
+    'https://nextstore-frontend-imeiwikrd.vercel.app',
+    /\.vercel\.app$/  // Sab Vercel URLs allow karein
+  ],
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization']
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  credentials: true
 }))
+
 app.use(express.json())
 
-// Routes
 app.use('/api/auth',     authRoutes)
 app.use('/api/products', productRoutes)
 app.use('/api/orders',   orderRoutes)
@@ -30,7 +37,6 @@ app.get('/', (req, res) => {
   res.send('NextStore API is running...')
 })
 
-// DB connect + server start
 const startServer = async () => {
   try {
     await connectDB()
