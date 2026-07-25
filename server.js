@@ -12,20 +12,18 @@ dotenv.config()
 
 const app = express()
 
-// CORS — frontend URL allow karein
-app.use(cors({
-  origin: [
-    'http://localhost:5173',
-    'https://nextstore-frontend-pearl.vercel.app',
-    'https://nextstore-frontend-imeiwikrd.vercel.app',
-    /\.vercel\.app$/  // Sab Vercel URLs allow karein
-  ],
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
-  credentials: true
-}))
-
+app.use(cors({ origin: '*' }))
 app.use(express.json())
+
+app.use(async (req, res, next) => {
+  try {
+    await connectDB()
+    next()
+  } catch (err) {
+    console.error('DB Error:', err.message)
+    res.status(500).json({ message: 'Database connection failed' })
+  }
+})
 
 app.use('/api/auth',     authRoutes)
 app.use('/api/products', productRoutes)
@@ -33,22 +31,6 @@ app.use('/api/orders',   orderRoutes)
 app.use('/api/reviews',  reviewRoutes)
 app.use('/api/wishlist', wishlistRoutes)
 
-app.get('/', (req, res) => {
-  res.send('NextStore API is running...')
-})
-
-const startServer = async () => {
-  try {
-    await connectDB()
-    if (process.env.NODE_ENV !== 'production') {
-      const PORT = process.env.PORT || 5000
-      app.listen(PORT, () => console.log(`Server running on port ${PORT}`))
-    }
-  } catch (error) {
-    console.error('Failed to connect to DB:', error)
-  }
-}
-
-startServer()
+app.get('/', (req, res) => res.send('NextStore API is running...'))
 
 export default app
