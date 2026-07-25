@@ -9,12 +9,12 @@ cloudinary.config({
   api_secret: process.env.CLOUDINARY_API_SECRET,
 })
 
-// Memory mein store karo (disk par nahi)
+// Memory storage use karo — disk nahi (Vercel ke liye)
 const storage = multer.memoryStorage()
 
 const upload = multer({
   storage,
-  limits: { fileSize: 5 * 1024 * 1024 }, // Max 5MB
+  limits: { fileSize: 5 * 1024 * 1024 },
   fileFilter: (req, file, cb) => {
     if (file.mimetype.startsWith('image/')) {
       cb(null, true)
@@ -24,7 +24,6 @@ const upload = multer({
   }
 })
 
-// Cloudinary par upload karne ka helper function
 export const uploadToCloudinary = (buffer, folder = 'nextstore') => {
   return new Promise((resolve, reject) => {
     cloudinary.uploader.upload_stream(
