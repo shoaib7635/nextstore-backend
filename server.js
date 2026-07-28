@@ -9,12 +9,22 @@ import reviewRoutes   from './routes/reviews.js'
 import wishlistRoutes from './routes/wishlist.js'
 
 dotenv.config()
-connectDB()
 
 const app = express()
 
-app.use(cors())
+app.use(cors({ origin: '*' }))
 app.use(express.json())
+
+// DB connect middleware
+app.use(async (req, res, next) => {
+  try {
+    await connectDB()
+    next()
+  } catch (err) {
+    console.error('DB Error:', err.message)
+    res.status(500).json({ message: 'Database connection failed' })
+  }
+})
 
 app.use('/api/auth',     authRoutes)
 app.use('/api/products', productRoutes)
@@ -22,9 +32,13 @@ app.use('/api/orders',   orderRoutes)
 app.use('/api/reviews',  reviewRoutes)
 app.use('/api/wishlist', wishlistRoutes)
 
-app.get('/', (req, res) => {
-  res.send('NextStore API is running...')
-})
+app.get('/', (req, res) => res.send('NextStore API is running...'))
 
-const PORT = process.env.PORT || 5000
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`))
+// Local development ke liye
+if (process.env.NODE_ENV !== 'production') {
+  const PORT = process.env.PORT || 5000
+  app.listen(PORT, () => console.log(`Server running on port ${PORT}`))
+}
+
+// Vercel ke liye export
+export default app
